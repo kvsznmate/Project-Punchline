@@ -1,0 +1,156 @@
+#config.yaml single source of truth for the pipeline
+
+#   Every stage reads its settings from here
+
+#     Pipeline: capture -> asr -> buffer -> matcher -> playback  (+ telemetry)
+# =============================================================================
+
+#Global device selection 
+
+#   Which compute device the ASR model runs on the switch. "auto" = use GPU if available, else fall back to CPU.
+#   gpu  -> lowest transcription latency (see asr.gpu)
+#   cpu  -> lightweight fallback, must still keep up with live audio (asr.cpu)
+#   auto -> prefer gpu, fall back to cpu
+device: auto            # one of: auto | gpu | cpu
+
+
+# Stage 1: audio capture 
+# These keys map 1:1 to CaptureConfig in src/capture/audio_capture.py.
+capture:
+  samplerate: 16000     # Hz. MUST match the chosen ASR model's rate (most streaming models want 16000). Mismatch = garbage
+
+  blocksize: 1600       # frames per chunk. LATENCY KNOB: latency ≈
+                        # blocksize / samplerate. 1600@16k ≈ 100 ms; 800 ≈ 50 ms.
+                        # Smaller = lower latency, higher glitch/overflow risk.
+  channels: 1           # input channels; >1 is downmixed to mono.
+  device: 1           # input device index (int) or name substring (str);
+                        # null = system default. Use a loopback/monitor device
+                        # to capture system audio (a live stream) — see
+                        # src/capture/README.md.
+  dtype: float32        # sample dtype from PortAudio; float32 avoids a later cast.
+  queue_maxsize: 8      # max chunks buffered capture->asr. Small on purpose:
+                        # bounds worst-case backlog latency to
+                        # queue_maxsize * (blocksize/samplerate). When full, the
+                        # OLDEST chunk is dropped to keep audio fresh.
+
+
+# --- Stage 2: streaming ASR --------------------------------------------------
+# Backend is chosen by top-level `device`. Both backends implement the
+# StreamingASR interface in src/asr/base.py (feed() -> [TranscriptResult]).
+asr:
+  # Emit partial (in-progress) hypotheses, not just finals. Partials are what
+  # let the matcher trigger early; disabling this raises latency to
+  # utterance-end. Keep true unless partials misfire too much.
+  emit_partials: true
+
+  # GPU backend settings (used when the resolved device is gpu).
+  gpu:
+    model: "medium"         # model size/name; larger = more accurate, higher
+                            # latency. medium markedly improves Hungarian over
+                            # small (more VRAM + slower inference — watch latency).
+    # `device` intentionally omitted: with top-level `device: auto`, the loader
+    # sets this to "cuda" if a CUDA GPU is detected, else "cpu". Add
+    # `device: "cuda"` or `device: "cpu"` here to force one and skip auto.
+    compute_type: "float16"    # GPU: float16. If it falls back to CPU, the
+                               # loader auto-downgrades this to int8 (float16
+                               # is GPU-only).
+    language: "hu"           # Hungarian
+    beam_size: 1            # LATENCY KNOB: 1 (greedy) is fastest; higher beams
+                            # are more accurate but slower. Default greedy.
+
+  # CPU fallback settings (used when the resolved device is cpu). Must run in
+  # real time — favor a lightweight engine such as Vosk here.
+  cpu:
+    engine: "vosk"          # lightweight streaming engine for real-time CPU.
+    model_path: "models/vosk-model-small-en-us"  # download separately; small
+                            # model keeps CPU real-time.
+    # Vosk consumes int16 PCM; the backend converts from capture's float32 at
+    # the ASR boundary (see float32_to_int16_bytes in base.py).
+
+
+# --- Stage 3: transcript buffer ----------------------------------------------
+# Small rolling window of recent transcript text the matcher scans. Size it to
+# the longest regex pattern in use — big enough to catch multi-word triggers,
+# no bigger (a larger window = more text to scan per match).
+buffer:
+  max_chars: 240          # rolling window length in characters. LATENCY-ish
+                          # knob: keep near the longest keyword phrase.
+  include_partials: true  # fold the current partial into the window so matches
+                          # can fire before the utterance finalizes.
+
+
+# --- Stage 4: regex keyword matcher -----------------------------------------
+# Matches regex patterns against the buffer. Matching on partials is faster but
+# can misfire on unstable words; per-keyword cooldown prevents repeat triggers
+# on repeated speech.
+matcher:
+  match_on_partials: true        # true = lowest latency (trigger before final);
+                                 # may misfire on words that later change.
+  case_insensitive: true
+  default_cooldown_seconds: 3.0  # per-keyword debounce: min seconds between two
+                                 # triggers of the SAME keyword. Prevents a
+                                 # repeated word from spamming a sound.
+
+  # Keyword -> sound mapping. `pattern` is a regex; `sound` is either a single
+  # filename under playback.sounds_dir OR a list of filenames — a list means one
+  # is chosen at random each time the keyword fires. `cooldown` overrides
+  # default_cooldown_seconds (per-keyword debounce, in seconds).
+  keywords:
+    - pattern: "\\bNesszi\\b"
+      sound: "messi.wav"
+      cooldown: 3.0
+    - pattern: "\\b(gól|gol|gool|bevágta|betalált|betette)\\b"
+      # Random goal song each time; 5-minute (300s) lockout so a single goal
+      # celebration plays one song uninterrupted and isn't re-triggered.
+      sound:
+        - "goals1.wav"
+        - "goals2.wav"
+        - "goals3.wav"
+        - "goals4.wav"
+      cooldown: 500.0
+    - pattern: "\\b(Messzi|MESZI)\\b"
+      sound: "goat.wav"
+      cooldown: 3.0
+    - pattern: "\\b(sárga|sárgalap)\\b"
+      sound: "siren.wav"
+      cooldown: 3.0
+    - pattern: "\\b(piros|pirosalap)\\b"
+      sound: "Red_card_techno.wav"
+      cooldown: 3.0
+      # ENGLISH
+    - pattern: "\\b(red|redcard)\\b"
+      sound: "Red_card_techno.wav"
+      cooldown: 3.
+    - pattern: "\\b(yellow|yellowcard)\\b"
+      sound: "siren.wav"
+      cooldown: 3.
+    - pattern: "\\b(Messi|Goat)\\b"
+      sound: "goat.wav"
+      cooldown: 3.0
+    - pattern: "\\b(Penalty)\\b"
+      sound: "goals1.wav"
+      cooldown: 3.0
+
+
+# --- Stage 5: sound trigger / playback --------------------------------------
+# Fires immediately on a match, mixed into local audio output.
+playback:
+  sounds_dir: "C:/Users/matek_yulq090/Desktop/stream_sounds/Project/assets/sounds"  # where the keyword sound files live.
+  output_device: null          # output device index/name; null = system default.
+  # Keep clips preloaded/decoded in memory so playback latency is just the
+  # audio-out path, not a disk read + decode per trigger.
+  preload: true
+  max_polyphony: 4             # max simultaneously playing clips before new
+                               # triggers steal the oldest voice.
+  volume: 1.0                  # 0.0–1.0 output gain for triggered sounds.
+
+
+# --- Telemetry / latency instrumentation ------------------------------------
+# Timing logs at each stage boundary so latency regressions are visible, not
+# guessed. Boundaries: capture -> asr_partial -> match -> playback.
+telemetry:
+  enabled: true
+  log_dir: "logs"
+  log_stage_latency: true    # log per-stage boundary timings.
+  log_every_n_chunks: 50     # throttle capture-stage stat logging.
+  level: "INFO"              # logging level: DEBUG | INFO | WARNING | ERROR.

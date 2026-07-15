@@ -1,0 +1,14 @@
+is_final,transcription,triggered,sound,matched_text,latency_ms
+1,Jó!,1,siren.wav,,16.0
+1,Köszi.,0,,,
+1,Köszönöm!,1,siren.wav,,16.0
+0,MESZÍ!,1,siren.wav,,109.0
+1,MESZI!,0,,,
+1,"Ha tetszett, köszönjük!",0,,,
+0,Hahahaha,1,siren.wav,,47.0
+1,"Ha tetszett, törjön!",1,siren.wav,,78.0
+0,"Ha tetszett, köszönöm!",0,,,
+1,Jó étvágyat kívánunk!,0,,,
+1,Sziasztok!,1,siren.wav,,16.0
+1,"Köszi, hogy tetszett!",0,,,
+0,Jó étvágyat kívánok!,1,siren.wav,,109.0

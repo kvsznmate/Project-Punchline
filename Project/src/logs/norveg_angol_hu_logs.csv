@@ -1,0 +1,59 @@
+is_final,transcription,triggered,sound,matched_text,latency_ms
+0,Megcsomósz!,1,siren.wav,,31.0
+0,Megcsumós szól van olyan...,0,,,
+0,"Meg csomós szól van olyan, hogy mondjuk...",0,,,
+0,"Meg csomós szor van olyan, hogy mondjuk...",0,,,
+0,A A A A A A A A A A A A A A,0,,,
+0,"Köszönöm, kérem, hogy az itt olyan...",0,,,
+0,Ujjolhatottam meg!,0,,,
+0,"úgy oldottam meg, hogy ez a mikrof...",0,,,
+0,"és újoldottam meg, hogy ez a mikrofon hallja ezt.",1,siren.wav,,78.0
+0,"úgy oldottam meg, hogy ez a mikrofon hallja ezt. Tehát ha mi beszélünk...",0,,,
+0,"Hát, tudtam meg, hogy ez a mikrofon hallja ezt. Tehát, ha mi beszélünk, azt is hallja.",0,,,
+0,"Mikrofon hallja ezt, tehát ha mi beszélünk azt is hallja. Most kimondtam...",0,,,
+0,"Tehát ha mi beszélünk azt is rajta. Most kimondtam, hogy sárga.",0,,,
+0,"Köszönöm, hogy köszönöm!",0,,,
+0,"Most ki mondtam, hogy sárga volt.",0,,,
+1,Köszi!,0,,,
+1,Köszönöm!,0,,,
+1,MESZEN!,0,,,
+1,Sziasztok!,0,,,
+1,Köszönöm!,0,,,
+1,Ne hava...,0,,,
+1,Köszönöm!,0,,,
+1,"Táskodt, táskodt!",0,,,
+0,Köszi!,1,siren.wav,,47.0
+1,Sziasztok!,0,,,
+0,Jó étvágyat kívánunk!,0,,,
+0,"Jó, köszönöm.",0,,,
+0,Jó étvágyat kívánunk!,0,,,
+0,Egy kókó megcsinált utána.,1,siren.wav,,47.0
+1,Pirocs!,0,,,
+1,Kurvány!,0,,,
+0,Itt át!,0,,,
+1,Gól! Gól!,0,,,
+1,Köszönöm!,1,siren.wav,,47.0
+1,Köszönöm!,0,,,
+0,"Ne, komolyan?",1,siren.wav,,15.0
+0,"Most miért ezt játszalál? Gold, gold, gold, gold, bevágta!",1,goals3.wav,bevágta,62.0
+0,"Gógy, gógy, gógy, bevágta",0,,,
+0,"Gógy, gógy, gógy, belakta! Betalált!",0,,,
+0,"Bármikor bevágtam, de találtam.",0,,,
+0,"Köszönöm, hogy tenned!",0,,,
+0,Betonált!,0,,,
+0,"De a messzik még ne színek, kovácsba. Igen, a messzik.",0,,,
+0,"Meghelyemező. Ne menjünk tényleg sem, mert bőrjük fokrújtunk. Jó.",1,siren.wav,,47.0
+0,"Nem menjünk tiggyészen, mert bőrjük az összesen. Jó. Az a... Minden. Minden.",1,siren.wav,,47.0
+1,"Nessi! Nort van, nessi. Nessi!",0,,,
+0,EZSZÍ!,0,,,
+1,SZI!,0,,,
+1,Neszi!,0,,,
+1,Köszi!,0,,,
+1,MESZI!,0,,,
+0,Szi?,0,,,
+1,Szi?,0,,,
+1,Jó étvágyat kívánunk!,1,siren.wav,,78.0
+1,"Köszi, hogy tetszett!",0,,,
+0,Sziasztok!,0,,,
+0,Köszönöm szépen!,1,siren.wav,,79.0
+1,Aki a főnök? Aki a főnök? Aki a főnök?,0,,,
